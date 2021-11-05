@@ -53,15 +53,23 @@ iframe = driver.find_element_by_xpath("//iframe")
 driver.switch_to.frame(0)
 
 time.sleep(2)
-# 
-driver.find_element_by_css_selector("input#fm-login-id").send_keys("test")
-time.sleep(1.9)
-driver.find_element_by_css_selector("input#fm-login-password").send_keys("admin")
+username = driver.find_element_by_css_selector("input#fm-login-id")
+ActionChains(driver).move_to_element(username).click(on_element=username).perform()
+for ever in "username":
+    time.sleep(random.randint(0,1000)/1000)
+    username.send_keys(ever)
+time.sleep(random.randint(0,1000)/1000)
+pwd = driver.find_element_by_css_selector("input#fm-login-password")
+ActionChains(driver).move_to_element(pwd).click(on_element=pwd).perform()
+for temp in "password":
+    time.sleep(random.randint(0,1000)/1000)
+    pwd.send_keys(temp)
+
 
 # 睡眠等待滑块出来
-time.sleep(2)
+time.sleep(random.randint(500,1500)/1000)
 # iframe = driver.find_element_by_xpath("//*[@id="baxia-dialog-content"]")
-driver.switch_to.frame("baxia-dialog-content")
+# driver.switch_to.frame("baxia-dialog-content")
 # try:
 #     huakuai = driver.find_element_by_xpath('//*[@id="nc_1_n1z"]')
 #     print("找到滑块元素")
@@ -77,7 +85,7 @@ driver.switch_to.frame("baxia-dialog-content")
 #     for index in range(count):
 #         print("index:%d" %index)
 #         try:
-#             action.move_by_offset(210/count, 0).perform()  # 平行移动鼠标
+#             action.move_by_offset(209/count, 0).perform()  # 平行移动鼠标
 #             driver.save_screenshot('login-screeshot-i-' + str(index) + '.png')
 #         except Exception as e:
 #             print(e)
@@ -93,12 +101,15 @@ driver.switch_to.frame("baxia-dialog-content")
 # print("滑块移动完成")
 
 try:
+    driver.switch_to.frame("baxia-dialog-content")
     slider = driver.find_element_by_xpath("//span[contains(@class, 'btn_slide')]")
     if slider.is_displayed():
         ActionChains(driver).click_and_hold(on_element=slider).perform()
-        ActionChains(driver).move_by_offset(xoffset=209, yoffset=0).perform()
+        ActionChains(driver).move_by_offset(xoffset=208, yoffset=0).perform()
         ActionChains(driver).pause(0.5).release().perform()
+        print("滑块移动完成")
 except:
+    print("未获取滑块")
     pass
 # try:
 #     # 找到滑块
@@ -120,26 +131,26 @@ except:
 #     pass
 print("滑块移动完成")
 # 切回到默认的父页面
-driver.switch_to.default_content()
+# driver.switch_to.default_content()
 
-driver.switch_to.frame("alibaba-login-box")
+# driver.switch_to.frame("alibaba-login-box")
 loginButton = driver.find_element_by_css_selector("input#fm-login-submit")
 loginButton.click()
 print("点击登录按钮成功")
 driver.switch_to.default_content()
 
 # 第2次滑动
-time.sleep(10)
-# driver.switch_to.frame("baxia-dialog-content")
-# try:
-slider = driver.find_element_by_xpath("//span[contains(@class, 'btn_slide')]")
-if slider.is_displayed():
-    ActionChains(driver).click_and_hold(on_element=slider).perform()
-    ActionChains(driver).move_by_offset(xoffset=208, yoffset=0).perform()
-    ActionChains(driver).pause(0.5).release().perform()
-    print("找到滑块")
-else:
-    print("未找到滑块")
+# time.sleep(10)
+# # driver.switch_to.frame("baxia-dialog-content")
+# # try:
+# slider = driver.find_element_by_xpath("//span[contains(@class, 'btn_slide')]")
+# if slider.is_displayed():
+#     ActionChains(driver).click_and_hold(on_element=slider).perform()
+#     ActionChains(driver).move_by_offset(xoffset=208, yoffset=0).perform()
+#     ActionChains(driver).pause(0.5).release().perform()
+#     print("找到滑块")
+# else:
+#     print("未找到滑块")
 # except as e:
 #     print("找滑块异常")
 #     pass
