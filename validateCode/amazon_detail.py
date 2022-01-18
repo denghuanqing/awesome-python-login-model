@@ -1,4 +1,5 @@
 import re
+import sys
 import time
 
 import pandas as pd
@@ -118,28 +119,38 @@ if __name__ == '__main__':
     参数
         1.[binary_location]chrome.exe执行路径的地址  
         2.[user-data-dir]chrome用户配置的地址->显示插件。地址栏输入chrome://version/查看浏览器信息。注：到User Data就结束了。程序运行过程中要关闭chrome浏览器！！
-        3.[executable_path]selenium驱动地址
+        3.[executable_path]selenium驱动地址 : https://blog.csdn.net/llbacyal/article/details/78563992
         4.[excel_path]源excel文件目录地址
     '''
-    options.binary_location = "C:\Program Files\Google\Chrome\Application\chrome.exe"
+    chrome_path = sys.argv[1] #"C:\Program Files\Google\Chrome\Application\chrome.exe"
+    user_path = sys.argv[2] #"C:\\Users\\****\\AppData\\Local\\Google\\Chrome\\User Data\\"
+    driver_path = sys.argv[3] #"C:\\Python39\\taobao\\chromedriver_win32\\chromedriver_update.exe"
+    excel_path = sys.argv[4] #F:\\****\\awesome-python-login-model\\validateCode\\ASIN_list.xlsx
+
+    print(" 4 param init start...")
+    print(str.format("chrome_path:%s" % chrome_path))
+    print(str.format("user_path:%s" % user_path))
+    print(str.format("driver_path:%s" % driver_path))
+    print(str.format("excel_path:%s" % excel_path))
+    print(" 4 param init end...")
+    options.binary_location = chrome_path
     options.add_experimental_option('excludeSwitches', ['enable-automation'])
     options.add_experimental_option('useAutomationExtension', False)
     # 指定这个目录才会打开安装的插件
-    options.add_argument("--user-data-dir=" + r"C:\\Users\\****\\AppData\\Local\\Google\\Chrome\\User Data\\")
+    options.add_argument("--user-data-dir=" + user_path)
 
     options.add_argument('--disable-gpu')
     options.add_argument("disable-web-security")
     options.add_argument('disable-infobars')
     options.add_experimental_option('excludeSwitches', ['enable-automation'])
 
-    driver = webdriver.Chrome(executable_path="C:\\Python39\\taobao\\chromedriver_win32\\chromedriver_update.exe",
+    driver = webdriver.Chrome(executable_path=driver_path,
                               chrome_options=options)
 
     wait = WebDriverWait(driver, 20)
     driver.maximize_window()
     row = 2
 
-    excel_path = "F:\\dhq_py_code\\awesome-python-login-model\\validateCode\\ASIN_list.xlsx"
     df = pd.DataFrame(pd.read_excel(excel_path, engine='openpyxl'))
     print(len(df))
     for i in range(0, len(df)):  # 取长度
@@ -160,28 +171,56 @@ if __name__ == '__main__':
         info_list = parse_detail(driver.page_source)
         info_list.append(driver.current_url)
         # 库存
-        stockNum = '0';
+        stockNum = '';
         try:
+            time.sleep(2)
             stock = wait.until(
                 EC.presence_of_element_located((By.XPATH,
                                                 '//*[@id="sellersprite-extension-Inventory-surpluscont"]/div[2]/div[1]/div[2]/span/span'))
             )
             stockNum = stock.text
-            time.sleep(2)
         except TimeoutException:
             stockNum = '--'
+
+        # 颜色
+        color = ''
+        try:
+            colorEle = wait.until(
+                EC.presence_of_element_located((By.XPATH,
+                                                '//*[@id="sellersprite-extension-quick-view-listing"]/div/div[2]/div[3]/div[1]/div/span'))
+            )
+            color = colorEle.text.replace("Color: ","")
+            # time.sleep(2)
+        except TimeoutException:
+            color = '--'
+
+        # 尺寸
+        size = '';
+        try:
+            sizeEle = wait.until(
+                EC.presence_of_element_located((By.XPATH,
+                                                '//*[@id="sellersprite-extension-quick-view-listing"]/div/div[2]/div[4]/div[1]/span/span'))
+            )
+            size = sizeEle.text
+            if 'x' not in size:
+                size = '--'
+            # time.sleep(2)
+        except TimeoutException:
+            size = '--'
 
         # 商品唯一编码{()}
         asin_regex = re.compile('/dp/(.*?)\?')
         asin = asin_regex.findall(driver.current_url)[0]
         info_list[0] = asin
         info_list.append(stockNum)
+        info_list.append(size)
+        info_list.append(color)
 
         print(info_list)
 
         # 组转excel数据
         # STOCK
-        df.loc[i] = [asin, brand, 'size', 'color', stockNum]
+        df.loc[i] = [asin, brand, size, color, stockNum]
         driver.close()
         driver.switch_to.window(handles[0])
     # 保存数据
